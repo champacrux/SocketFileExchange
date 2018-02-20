@@ -46,69 +46,69 @@ public class FileServer implements Runnable {
     public void run() {
         try {
             System.out.println("Starting FileServer");
-            
+
             FileHeader fh = null;
             mServerSocket = new ServerSocket(mPort);
             while (keepRunning) {
                 try {
-                    
+
                     System.out.println("Waiting for client to connect");
-                    
+
                     Socket client = mServerSocket.accept();
-                    
+
                     if (mListener != null) {
                         mListener.connectedStatus(true);
                     }
-                    
+
                     InputStream is = client.getInputStream();
                     OutputStream os = client.getOutputStream();
-                    
+
                     byte[] headers = readHeaderBytes(is);
-                    
+
                     fh = new FileHeader(headers);
-                    
+
                     if (mListener != null) {
                         mListener.receivingStarted(fh.fileId, fh.fileName);
                     }
-                    
+
                     FileOutputStream fos = new FileOutputStream(new File("files", fh.fileName));
-                    
+
                     byte[] buffer = new byte[4096];
                     int read = 0;
                     long totalRead = 0;
                     while (totalRead < fh.fileSize) {
                         try {
-                        read = is.read(buffer);
-                        fos.write(buffer, 0, read);
-                        totalRead += read;
-                        fos.flush();
+                            read = is.read(buffer);
+                            fos.write(buffer, 0, read);
+                            totalRead += read;
+                            fos.flush();
                         } catch (IndexOutOfBoundsException e) {
                             e.printStackTrace();
                             break;
                         }
-                        
+
                         if (mListener != null) {
                             int progress = Utils.calcProgress(totalRead, fh.fileSize);
                             mListener.receiveProgress(fh.fileId, fh.fileName, totalRead, fh.fileSize, progress);
                         }
                     }
-                    
+
                     if (mListener != null) {
                         mListener.receivingEnded(fh.fileId, fh.fileName);
                     }
-                    
+
                     fos.close();
-                    
+
                     byte[] result = Utils.longToBytes(RESULT_OK);
-                    
+
                     os.write(result);
-                    
+
                     client.close();
-                    
+
                     if (mListener != null) {
                         mListener.connectedStatus(false);
                     }
-                    
+
                 } catch (IOException ex) {
                     System.out.println("Exception Occurred");
                     Logger.getLogger(FileServer.class.getName()).log(Level.SEVERE, null, ex);
