@@ -1,103 +1,112 @@
-profile-init,compile-single" description="Profile a selected class in the IDE." if="profiler.info.jvmargs.agent" name="-profile-single-pre72">
-        <fail unless="profile.class">Must select one file in the IDE or set profile.class</fail>
-        <fail unless="netbeans.home">This target only works when run from inside the NetBeans IDE.</fail>
-        <nbprofiledirect>
-            <classpath>
-                <path path="${run.classpath}"/>
-            </classpath>
-        </nbprofiledirect>
-        <profile classname="${profile.class}"/>
-    </target>
-    <target depends="profile-init,compile-single" if="profiler.info.jvmargs.agent" name="-profile-applet-pre72">
-        <fail unless="netbeans.home">This target only works when run from inside the NetBeans IDE.</fail>
-        <nbprofiledirect>
-            <classpath>
-                <path path="${run.classpath}"/>
-            </classpath>
-        </nbprofiledirect>
-        <profile classname="sun.applet.AppletViewer">
-            <customize>
-                <arg value="${applet.url}"/>
-            </customize>
-        </profile>
-    </target>
-    <target depends="profile-init,compile-test-single" if="profiler.info.jvmargs.agent" name="-profile-test-single-pre72">
-        <fail unless="netbeans.home">This target only works when run from inside the NetBeans IDE.</fail>
-        <nbprofiledirect>
-            <classpath>
-                <path path="${run.test.classpath}"/>
-            </classpath>
-        </nbprofiledirect>
-        <junit dir="${profiler.info.dir}" errorproperty="tests.failed" failureproperty="tests.failed" fork="true" jvm="${profiler.info.jvm}" showoutput="true">
-            <env key="${profiler.info.pathvar}" path="${profiler.info.agentpath}:${profiler.current.path}"/>
-            <jvmarg value="${profiler.info.jvmargs.agent}"/>
-            <jvmarg line="${profiler.info.jvmargs}"/>
-            <test name="${profile.class}"/>
-            <classpath>
-                <path path="${run.test.classpath}"/>
-            </classpath>
-            <syspropertyset>
-                <propertyref prefix="test-sys-prop."/>
-                <mapper from="test-sys-prop.*" to="*" type="glob"/>
-            </syspropertyset>
-            <formatter type="brief" usefile="false"/>
-            <formatter type="xml"/>
-        </junit>
-    </target>
-    <!--
-                end of pre NB72 profiling section
-            -->
-    <target if="netbeans.home" name="-profile-check">
-        <condition property="profiler.configured">
-            <or>
-                <contains casesensitive="true" string="${run.jvmargs.ide}" substring="-agentpath:"/>
-                <contains casesensitive="true" string="${run.jvmargs.ide}" substring="-javaagent:"/>
-            </or>
-        </condition>
-    </target>
-    <target depends="-profile-check,-profile-pre72" description="Profile a project in the IDE." if="profiler.configured" name="profile" unless="profiler.info.jvmargs.agent">
-        <startprofiler/>
-        <antcall target="run"/>
-    </target>
-    <target depends="-profile-check,-profile-single-pre72" description="Profile a selected class in the IDE." if="profiler.configured" name="profile-single" unless="profiler.info.jvmargs.agent">
-        <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
-        <startprofiler/>
-        <antcall target="run-single"/>
-    </target>
-    <target depends="-profile-test-single-pre72" description="Profile a selected test in the IDE." name="profile-test-single"/>
-    <target depends="-profile-check" description="Profile a selected test in the IDE." if="profiler.configured" name="profile-test" unless="profiler.info.jvmargs">
-        <fail unless="test.includes">Must select some files in the IDE or set test.includes</fail>
-        <startprofiler/>
-        <antcall target="test-single"/>
-    </target>
-    <target depends="-profile-check" description="Profile a selected class in the IDE." if="profiler.configured" name="profile-test-with-main">
-        <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
-        <startprofiler/>
-        <antcal target="run-test-with-main"/>
-    </target>
-    <target depends="-profile-check,-profile-applet-pre72" if="profiler.configured" name="profile-applet" unless="profiler.info.jvmargs.agent">
-        <fail unless="applet.url">Must select one file in the IDE or set applet.url</fail>
-        <startprofiler/>
-        <antcall target="run-applet"/>
-    </target>
-    <!--
-                ===============
-                JAVADOC SECTION
-                ===============
-            -->
-    <target depends="init" if="have.sources" name="-javadoc-build">
-        <mkdir dir="${dist.javadoc.dir}"/>
-        <condition else="" property="javadoc.endorsed.classpath.cmd.line.arg" value="-J${endorsed.classpath.cmd.line.arg}">
-            <and>
-                <isset property="endorsed.classpath.cmd.line.arg"/>
-                <not>
-                    <equals arg1="${endorsed.classpath.cmd.line.arg}" arg2=""/>
-                </not>
-            </and>
-        </condition>
-        <condition else="" property="bug5101868workaround" value="*.java">
-            <matches pattern="1\.[56](\..*)?" string="${java.version}"/>
-        </condition>
-        <javadoc additionalparam="-J-Dfile.encoding=${file.encoding} ${javadoc.additionalparam}" author="${javadoc.author}" charset="UTF-8" destdir="${dist.javadoc.dir}" docencoding="UTF-8" encoding="${javadoc.encoding.used}" failonerror="true" noindex="${javadoc.noindex}" nonavbar="${javadoc.nonavbar}" notree="${javadoc.notree}" private="${javadoc.private}" source="${javac.source}" splitindex="${javadoc.splitindex}" use="${javadoc.use}" useexternalfile="true" version="${javadoc.version}" windowtitle="${javadoc.windowtitle}">
-            <classpath>
-                <path path="$
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Form version="1.3" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
+  <Properties>
+    <Property name="defaultCloseOperation" type="int" value="3"/>
+  </Properties>
+  <SyntheticProperties>
+    <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
+    <SyntheticProperty name="generateCenter" type="boolean" value="false"/>
+  </SyntheticProperties>
+  <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
+    <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
+  </AuxValues>
+
+  <Layout>
+    <DimensionLayout dim="0">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
+                      <Component id="btnStartServer" alignment="0" max="32767" attributes="0"/>
+                      <Group type="102" attributes="0">
+                          <Component id="txtFilePath" min="-2" pref="244" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="btnBrowse" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <Group type="102" attributes="0">
+                          <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="txtServerAddress" min="-2" pref="96" max="-2" attributes="0"/>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="txtServerPort" min="-2" pref="66" max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                  <Component id="progbar" alignment="0" min="-2" pref="317" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="32767" attributes="0"/>
+          </Group>
+      </Group>
+    </DimensionLayout>
+    <DimensionLayout dim="1">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="txtServerAddress" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="txtServerPort" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="txtFilePath" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="btnBrowse" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="btnStartServer" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <Component id="progbar" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
+          </Group>
+      </Group>
+    </DimensionLayout>
+  </Layout>
+  <SubComponents>
+    <Component class="javax.swing.JLabel" name="jLabel1">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Server Address:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="txtServerAddress">
+    </Component>
+    <Component class="javax.swing.JTextField" name="txtServerPort">
+    </Component>
+    <Component class="javax.swing.JLabel" name="jLabel2">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Server Port:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="txtFilePath">
+    </Component>
+    <Component class="javax.swing.JButton" name="btnBrowse">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Browse"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnBrowseActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JToggleButton" name="btnStartServer">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Start Upload"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnStartServerActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JProgressBar" name="progbar">
+    </Component>
+  </SubComponents>
+</Form>
